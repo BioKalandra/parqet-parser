@@ -1,5 +1,7 @@
 package com.jan.coin.parqetparser;
 
+import java.io.IOException;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -9,15 +11,12 @@ public class ParqetParserApplication {
     
     private static ApplicationContext applicationContext;
     
-    public static void main(String[] args) {
-        SpringApplication.run(ParqetParserApplication.class, args);
-        checkBeansPresence("fileParser");
-    }
-    
-    private static void checkBeansPresence(String... beans) {
-        for (String beanName : beans) {
-            System.out.println("Is " + beanName + " in ApplicationContext: " + applicationContext.containsBean(beanName));
-        }
+    public static void main(String[] args) throws IOException {
+        
+        applicationContext = SpringApplication.run(ParqetParserApplication.class, args);
+        Parser bean = (Parser) applicationContext.getBean("parser");
+        bean.startProcess();
+        
     }
     
 }
