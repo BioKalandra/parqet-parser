@@ -6,7 +6,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
@@ -86,15 +86,15 @@ public class Parser {
     }
     
     private String prepareDate(String dateString) throws ParseException {
-        LocalDateTime date = parseString(dateString);
+        ZonedDateTime date = parseString(dateString);
         DateTimeFormatter isoInstant = DateTimeFormatter.ISO_INSTANT;
         
         return isoInstant.format(date);
     }
     
-    private LocalDateTime parseString(String dateString) {
+    private ZonedDateTime parseString(String dateString) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm z, dd MMMM y").withLocale(Locale.ENGLISH);
-        return LocalDateTime.parse(dateString, formatter);
+        return ZonedDateTime.parse(dateString, formatter);
     }
     
     private String parsePattern(String content, final String patternString) throws ParseEmailException {
