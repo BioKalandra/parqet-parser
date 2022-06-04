@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationContext;
 @SpringBootApplication
 public class ParqetParserApplication {
     
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParseEmailException {
         
         ApplicationContext applicationContext = SpringApplication.run(ParqetParserApplication.class, args);
         ProgramStarter beansOfType = applicationContext.getBean(ProgramStarter.class);

@@ -11,6 +11,9 @@ import lombok.Data;
 @Data
 public class DataBean implements Serializable {
     
+    private static final long serialVersionUID = 1L;
+    
+    private String transactionId;
     private String datetime;
     private String price;
     private String shares;
