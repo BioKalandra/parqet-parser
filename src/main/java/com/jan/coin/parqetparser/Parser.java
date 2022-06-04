@@ -72,16 +72,27 @@ public class Parser {
         final String datePatternString = "\\>(\\d\\d\\:\\d\\d\\sCE\\S?T, \\d\\d?\\s\\w{3,10}\\s\\d{4})<\\/div>";
         final String amountSpentPatternString = "(\\d{3,4}\\.\\d{2}\\sEUR)(?! per BTC)";
         final String pricePatternString = "(\\d{3,7}\\.\\d{1,2}\\sEUR)(?=\\s?per BTC)";
+        final String feePatternString = "BTC \\/\\s(\\d{1,3}\\.\\d{1,2})\\s?EUR";
         
         String shares = parsePattern(mail, sharePatternString);
         String transactionId = parsePattern(mail, transactionIdPatternString);
         String dateString = parsePattern(mail, datePatternString);
         String amountSpent = parsePattern(mail, amountSpentPatternString);
         String price = parsePattern(mail, pricePatternString);
+        String tradingFee = parsePattern(mail, feePatternString);
+        String networkFee = parsePattern(mail, feePatternString, 2);
+        String feesCombined = calculateFees(tradingFee, networkFee);
         
         String datetime = prepareDate(dateString);
         
-        return new DataBean(transactionId, datetime, price, shares, amountSpent, null, null, "Buy", "Crypto", "BTC", "EUR");
+        return new DataBean(transactionId, datetime, price, shares, amountSpent, null, feesCombined, "Buy", "Crypto", "BTC", "EUR");
+    }
+    
+    private String calculateFees(String tradingFee, String networkFee) {
+        Double d1 = Double.valueOf(tradingFee);
+        Double d2 = Double.valueOf(networkFee);
+        Double result = d1 + d2;
+        return result.toString();
     }
     
     private String prepareDate(String dateString) {
@@ -96,9 +107,16 @@ public class Parser {
     }
     
     private String parsePattern(String content, final String patternString) throws ParseEmailException {
+        return parsePattern(content, patternString, null);
+    }
+    
+    private String parsePattern(String content, final String patternString, Integer group) throws ParseEmailException {
         Pattern pattern = Pattern.compile(patternString);
         Matcher matcher = pattern.matcher(content);
-        boolean matchFound = matcher.find();
+        boolean matchFound = false;
+        for (int matches = 1; matches <= (group != null ? group : 1); matches++) {
+            matchFound = matcher.find();
+        }
         if (matchFound) {
             if (matcher.groupCount() != 1) {
                 throw new ParseEmailException("too many strings found");
