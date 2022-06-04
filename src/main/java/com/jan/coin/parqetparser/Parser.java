@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -70,8 +72,8 @@ public class Parser {
         final String sharePatternString = "Your Bitcoin purchase for (\\d\\.\\d{8}) BTC";
         final String transactionIdPatternString = "#000000;\\\">(6\\d\\w{3,24})</div>";
         final String datePatternString = "\\>(\\d\\d\\:\\d\\d\\sCE\\S?T, \\d\\d?\\s\\w{3,10}\\s\\d{4})<\\/div>";
-        final String amountSpentPatternString = "(\\d{3,4}\\.\\d{2}\\sEUR)(?! per BTC)";
-        final String pricePatternString = "(\\d{3,7}\\.\\d{1,2}\\sEUR)(?=\\s?per BTC)";
+        final String amountSpentPatternString = "(\\d{3,4}\\.\\d{2})\\sEUR(?! per BTC)";
+        final String pricePatternString = "(\\d{3,7}\\.\\d{1,2})(?=\\sEUR\\s?per BTC)";
         final String feePatternString = "BTC \\/\\s(\\d{1,3}\\.\\d{1,2})\\s?EUR";
         
         String shares = parsePattern(mail, sharePatternString);
@@ -85,14 +87,18 @@ public class Parser {
         
         String datetime = prepareDate(dateString);
         
-        return new DataBean(transactionId, datetime, price, shares, amountSpent, null, feesCombined, "Buy", "Crypto", "BTC", "EUR");
+        return new DataBean(transactionId, datetime, price, shares, amountSpent, "0", feesCombined, "Buy", "Crypto", "BTC", "EUR");
     }
     
     private String calculateFees(String tradingFee, String networkFee) {
         Double d1 = Double.valueOf(tradingFee);
         Double d2 = Double.valueOf(networkFee);
         Double result = d1 + d2;
-        return result.toString();
+        
+        DecimalFormatSymbols formatSymbols = new DecimalFormatSymbols(Locale.getDefault());
+        formatSymbols.setDecimalSeparator('.');
+        DecimalFormat df = new DecimalFormat("#.##", formatSymbols);
+        return df.format(result);
     }
     
     private String prepareDate(String dateString) {
