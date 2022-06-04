@@ -1,6 +1,5 @@
 package com.jan.coin.parqetparser;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,14 +23,14 @@ public class ProgramStarter {
     @Autowired
     private CsvExporter exporter;
     
-    public void startProcess() throws IOException, ParseEmailException {
+    public void startProcess() throws Exception {
         List<Path> findMails = fileParser.findMails();
         List<DataBean> data = new ArrayList<>();
         for (Path mail : findMails) {
             DataBean bean = fileParser.parseMail(mail);
             data.add(bean);
+            System.err.println(bean.getDatetime());
         }
-        data.forEach(d -> log.info(d.toString()));
         exporter.exportToCsv(data);
     }
 }

@@ -5,8 +5,15 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -42,7 +49,7 @@ public class Parser {
         return Collections.emptyList();
     }
     
-    public DataBean parseMail(Path mail) throws IOException, ParseEmailException {
+    public DataBean parseMail(Path mail) throws IOException, ParseEmailException, ParseException {
         String read = loadFile(mail);
         return parseContentOfMail(read);
     }
@@ -63,15 +70,37 @@ public class Parser {
         }
     }
     
-    private DataBean parseContentOfMail(String mail) throws ParseEmailException {
-        final String btcString = "Your Bitcoin purchase for (\\d\\.\\d{8}) BTC";
-        final String transActionId = "#000000;\\\">(6\\d\\w{3,24})</div>";
-        String btc = parsePattern(mail, btcString);
-        String transactionId = parsePattern(mail, transActionId);
+    private DataBean parseContentOfMail(String mail) throws ParseEmailException, ParseException {
+        final String sharePatternString = "Your Bitcoin purchase for (\\d\\.\\d{8}) BTC";
+        final String transactionIdPatternString = "#000000;\\\">(6\\d\\w{3,24})</div>";
+        final String datePatternString = "\\>(\\d\\d\\:\\d\\d\\sCE\\S?T, \\d\\d?\\s\\w{3,10}\\s\\d{4})<\\/div>";
+        
+        String btc = parsePattern(mail, sharePatternString);
+        String transactionId = parsePattern(mail, transactionIdPatternString);
+        String dateString = parsePattern(mail, datePatternString);
+        String preparedDate = prepareDate(dateString);
+        
         DataBean dataBean = new DataBean();
         dataBean.setShares(btc);
         dataBean.setTransactionId(transactionId);
+        dataBean.setDatetime(preparedDate);
+        
         return dataBean;
+    }
+    
+    private String prepareDate(String dateString) throws ParseException {
+        Date date = parseString(dateString);
+        
+        DateTimeFormatter isoInstant = DateTimeFormatter.ISO_INSTANT;
+        LocalDateTime localDateTime = date.toInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
+        return isoInstant.format(localDateTime);
+    }
+    
+    private Date parseString(String dateString) throws ParseException {
+        Locale locale = new Locale("en", "EN");
+        final String datePattern = "HH:mm z, dd MMM yyyy";
+        SimpleDateFormat sdf = new SimpleDateFormat(datePattern, locale);
+        return sdf.parse(dateString);
     }
     
     private String parsePattern(String content, final String patternString) throws ParseEmailException {
