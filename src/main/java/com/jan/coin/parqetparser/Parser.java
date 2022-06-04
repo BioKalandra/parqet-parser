@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.ParseException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -46,7 +45,7 @@ public class Parser {
         return Collections.emptyList();
     }
     
-    public DataBean parseMail(Path mail) throws IOException, ParseEmailException, ParseException {
+    public DataBean parseMail(Path mail) throws IOException, ParseEmailException {
         String read = loadFile(mail);
         return parseContentOfMail(read);
     }
@@ -67,28 +66,27 @@ public class Parser {
         }
     }
     
-    private DataBean parseContentOfMail(String mail) throws ParseEmailException, ParseException {
+    private DataBean parseContentOfMail(String mail) throws ParseEmailException {
         final String sharePatternString = "Your Bitcoin purchase for (\\d\\.\\d{8}) BTC";
         final String transactionIdPatternString = "#000000;\\\">(6\\d\\w{3,24})</div>";
         final String datePatternString = "\\>(\\d\\d\\:\\d\\d\\sCE\\S?T, \\d\\d?\\s\\w{3,10}\\s\\d{4})<\\/div>";
+        final String amountSpentPatternString = "(\\d{3,4}\\.\\d{2}\\sEUR)(?! per BTC)";
+        final String pricePatternString = "(\\d{3,7}\\.\\d{1,2}\\sEUR)(?=\\s?per BTC)";
         
-        String btc = parsePattern(mail, sharePatternString);
+        String shares = parsePattern(mail, sharePatternString);
         String transactionId = parsePattern(mail, transactionIdPatternString);
         String dateString = parsePattern(mail, datePatternString);
-        String preparedDate = prepareDate(dateString);
+        String amountSpent = parsePattern(mail, amountSpentPatternString);
+        String price = parsePattern(mail, pricePatternString);
         
-        DataBean dataBean = new DataBean();
-        dataBean.setShares(btc);
-        dataBean.setTransactionId(transactionId);
-        dataBean.setDatetime(preparedDate);
+        String datetime = prepareDate(dateString);
         
-        return dataBean;
+        return new DataBean(transactionId, datetime, price, shares, amountSpent, null, null, "Buy", "Crypto", "BTC", "EUR");
     }
     
-    private String prepareDate(String dateString) throws ParseException {
+    private String prepareDate(String dateString) {
         ZonedDateTime date = parseString(dateString);
         DateTimeFormatter isoInstant = DateTimeFormatter.ISO_INSTANT;
-        
         return isoInstant.format(date);
     }
     
@@ -108,7 +106,7 @@ public class Parser {
                 return matcher.group(1);
             }
         } else {
-            throw new ParseEmailException("too many strings found");
+            throw new ParseEmailException("no string found");
         }
     }
     

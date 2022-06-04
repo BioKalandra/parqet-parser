@@ -29,7 +29,6 @@ public class ProgramStarter {
         for (Path mail : findMails) {
             DataBean bean = fileParser.parseMail(mail);
             data.add(bean);
-            System.err.println(bean.getDatetime());
         }
         exporter.exportToCsv(data);
     }

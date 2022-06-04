@@ -2,6 +2,7 @@ package com.jan.coin.parqetparser;
 
 import java.io.Serializable;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
@@ -9,6 +10,7 @@ import lombok.Data;
  *
  */
 @Data
+@AllArgsConstructor
 public class DataBean implements Serializable {
     
     private static final long serialVersionUID = 1L;
