@@ -14,7 +14,7 @@ public class ParqetParserApplication {
     public static void main(String[] args) throws IOException {
         
         applicationContext = SpringApplication.run(ParqetParserApplication.class, args);
-        Parser bean = (Parser) applicationContext.getBean("parser");
+        ProgramStarter bean = (ProgramStarter) applicationContext.getBean("parser");
         bean.startProcess();
         
     }
