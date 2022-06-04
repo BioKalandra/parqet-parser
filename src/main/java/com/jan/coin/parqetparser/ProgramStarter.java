@@ -29,7 +29,7 @@ public class ProgramStarter {
         for (Path mail : findMails) {
             DataBean bean = fileParser.parseMail(mail);
             data.add(bean);
-            System.err.println(bean);
+            log.debug(bean.toString());
         }
         exporter.exportToCsv(data);
     }
